@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Manahil Textile</title>
+      <link rel="icon" type="image/png" href="logo.png" style="height: 50px;">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f5f0eb;
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .admin-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .admin-header h1 i {
+            margin-right: 10px;
+            color: #b88b58;
+        }
+
+        .back-btn {
+            background: #b88b58;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: #9c6e40;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+            border-left: 4px solid #b88b58;
+            padding-left: 1rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e8e0d8;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            background: #fefcf9;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #b88b58;
+            box-shadow: 0 0 0 3px rgba(184, 139, 88, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Image Upload Area */
+        .upload-area {
+            border: 2px dashed #d4c5b5;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #fefcf9;
+        }
+
+        .upload-area:hover {
+            border-color: #b88b58;
+            background: #fff8f0;
+        }
+
+        .upload-area i {
+            font-size: 2.5rem;
+            color: #b88b58;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-area p {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-preview img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 3px solid #b88b58;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .remove-image:hover {
+            transform: scale(1.1);
+        }
+
+        /* Buttons */
+        .btn-submit {
+            background: linear-gradient(135deg, #b88b58 0%, #9c6e40 100%);
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(184, 139, 88, 0.4);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        /* Products List */
+        .products-list {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .refresh-btn {
+            background: #f0ebe6;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .refresh-btn:hover {
+            background: #e0d6cc;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .admin-product-card {
+            background: #fefcf9;
+            border-radius: 20px;
+            padding: 1rem;
+            border: 1px solid #eee5dc;
+            transition: 0.3s;
+        }
+
+        .admin-product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .admin-product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+        }
+
+        .admin-product-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .admin-product-price {
+            color: #b88b58;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .admin-stock {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .edit-btn {
+            background: #b88b58;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .edit-btn:hover {
+            background: #9c6e40;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1><i class="fas fa-crown"></i> Manahil Textile - Admin Panel</h1>
+        <a href="index.html" class="back-btn" target="_blank"><i class="fas fa-store"></i> View Store</a>
+    </div>
+
+    <div class="admin-container">
+        <!-- Add/Edit Product Form -->
+        <div class="form-card">
+            <div class="form-title">
+                <i class="fas fa-plus-circle" style="color: #b88b58;"></i>
+                <span id="formTitle">Add New Product</span>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Product Name *</label>
+                    <input type="text" id="prodName" placeholder="e.g., Luxury Embroidered Kurti" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-rupee-sign"></i> Price (PKR) *</label>
+                        <input type="number" step="0.01" id="prodPrice" placeholder="3499" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-box"></i> Stock Status *</label>
+                        <select id="prodStock">
+                            <option value="in-stock">✅ In Stock</option>
+                            <option value="out-of-stock">❌ Out of Stock</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Product Image *</label>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click or drag & drop to upload image</p>
+                        <p style="font-size: 0.7rem; margin-top: 5px;">Supports: JPG, PNG, WebP, AVIF</p>
+                        <input type="file" id="imageUpload" accept="image/*">
+                    </div>
+                    <div id="imagePreview" class="image-preview" style="display: none;">
+                        <img id="previewImg" src="" alt="Preview">
+                        <div class="remove-image" onclick="removeImage()">×</div>
+                    </div>
+                    <input type="hidden" id="prodImage" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Product Description</label>
+                    <textarea id="prodDesc" rows="3" placeholder="Detailed product description..."></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Product</button>
+                    <button type="button" id="cancelBtn" class="btn-cancel"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products List -->
+        <div class="products-list">
+            <div class="list-header">
+                <h2><i class="fas fa-list"></i> Manage Products</h2>
+                <button id="refreshBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div id="adminProductsGrid" class="admin-grid">
+                <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading products...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Supabase Configuration - using unique variable name to avoid conflicts
+        const SUPABASE_URL_ADMIN = 'https://mooozanojaluzdyuuwyk.supabase.co';
+        const SUPABASE_ANON_KEY_ADMIN = 'sb_publishable_cVy0SP6ttmU19NObTBtSlQ_bAymwEXp';
+        
+        const supabaseAdmin = window.supabase.createClient(SUPABASE_URL_ADMIN, SUPABASE_ANON_KEY_ADMIN);
+        let currentProducts = [];
+        let currentImageFile = null;
+
+        // Upload image to Supabase Storage
+        async function uploadImage(file) {
+            if (!file) return null;
+            
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `product-images/${fileName}`;
+            
+            const { data, error } = await supabaseAdmin.storage
+                .from('product-images')
+                .upload(filePath, file);
+            
+            if (error) {
+                console.error('Upload error:', error);
+                showToast('Image upload failed: ' + error.message, true);
+                return null;
+            }
+            
+            const { data: urlData } = supabaseAdmin.storage
+                .from('product-images')
+                .getPublicUrl(filePath);
+            
+            return urlData.publicUrl;
+        }
+
+        // Get all products
+        async function getAllProducts() {
+            const { data, error } = await supabaseAdmin
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                showToast('Error loading products: ' + error.message, true);
+                return [];
+            }
+            return data || [];
+        }
+
+        // Save product (insert or update)
+        async function saveProduct(product, id = null) {
+            if (id) {
+                const { error } = await supabaseAdmin
+                    .from('products')
+                    .update({
+                        name: product.name,
+                        price: product.price,
+                        image_url: product.image_url,
+                        stock_status: product.stock_status,
+                        description: product.description,
+                    })
+                    .eq('id', id);
+                
+                if (error) throw error;
+            } else {
+                const { error } = await supabaseAdmin
+                    .from('products')
+                    .insert([{
+                        name: product.name,
+                        price: product.price,
+                        image_url: product.image_url,
+                        stock_status: product.stock_status,
+                        description: product.description,
+                        created_at: new Date()
+                    }]);
+                
+                if (error) throw error;
+            }
+        }
+
+        // Delete product
+        async function deleteProductFromDB(id) {
+            const { error } = await supabaseAdmin
+                .from('products')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+        }
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Load products for admin view
+        async function loadAdminProducts() {
+            try {
+                currentProducts = await getAllProducts();
+                renderAdminProducts();
+            } catch (error) {
+                showToast('Error loading products: ' + error.message, true);
+            }
+        }
+
+        // Render admin products grid
+        function renderAdminProducts() {
+            const grid = document.getElementById('adminProductsGrid');
+            if (!currentProducts.length) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i> No products yet. Create your first product!</div>';
+                return;
+            }
+            
+            grid.innerHTML = currentProducts.map(product => `
+                <div class="admin-product-card">
+                    <img class="admin-product-img" src="${product.image_url || 'https://via.placeholder.com/280x200?text=No+Image'}" 
+                         onerror="this.src='https://via.placeholder.com/280x200?text=Image+Error'" alt="${escapeHtml(product.name)}">
+                    <div class="admin-product-title">${escapeHtml(product.name)}</div>
+                    <div class="admin-product-price">PKR ${parseFloat(product.price).toLocaleString()}</div>
+                    <div class="admin-stock" style="background: ${product.stock_status === 'in-stock' ? '#d4edda' : '#f8d7da'}; color: ${product.stock_status === 'in-stock' ? '#155724' : '#721c24'}">
+                        ${product.stock_status === 'in-stock' ? '✓ In Stock' : '✗ Out of Stock'}
+                    </div>
+                    <div class="card-actions">
+                        <button class="edit-btn" onclick="editProduct('${product.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Edit product
+        window.editProduct = function(id) {
+            const product = currentProducts.find(p => p.id == id);
+            if (product) {
+                document.getElementById('productId').value = product.id;
+                document.getElementById('prodName').value = product.name;
+                document.getElementById('prodPrice').value = product.price;
+                document.getElementById('prodStock').value = product.stock_status;
+                document.getElementById('prodDesc').value = product.description || '';
+                
+                if (product.image_url) {
+                    document.getElementById('previewImg').src = product.image_url;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('prodImage').value = product.image_url;
+                    document.getElementById('uploadArea').style.display = 'none';
+                }
+                
+                document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Product';
+                document.getElementById('formTitle').scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        // Delete product
+        window.deleteProduct = async function(id) {
+            if (confirm('⚠️ Are you sure you want to delete this product permanently?')) {
+                try {
+                    await deleteProductFromDB(id);
+                    await loadAdminProducts();
+                    showToast('✅ Product deleted successfully');
+                    resetForm();
+                } catch (error) {
+                    showToast('Delete failed: ' + error.message, true);
+                }
+            }
+        };
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('productId').value = '';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodStock').value = 'in-stock';
+            document.getElementById('prodDesc').value = '';
+            document.getElementById('prodImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('previewImg').src = '';
+            currentImageFile = null;
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add New Product';
+        }
+
+        // Remove image
+        function removeImage() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('prodImage').value = '';
+            currentImageFile = null;
+        }
+
+        // Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Handle image file
+        function handleImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload an image file', true);
+                return;
+            }
+            
+            currentImageFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Image upload event listeners
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('imageUpload').click();
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadArea').style.borderColor = '#b88b58';
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadArea').style.borderColor = '#d4c5b5';
+        });
+
+        document.getElementById('uploadArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageFile(file);
+            }
+        });
+
+        document.getElementById('imageUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageFile(file);
+            }
+        });
+
+        // Form submit
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('productId').value;
+            const name = document.getElementById('prodName').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const stock_status = document.getElementById('prodStock').value;
+            const description = document.getElementById('prodDesc').value.trim();
+            
+            let image_url = document.getElementById('prodImage').value;
+            
+            if (!name || isNaN(price)) {
+                showToast('Please fill all required fields', true);
+                return;
+            }
+            
+            try {
+                if (currentImageFile) {
+                    showToast('Uploading image...');
+                    const uploadedUrl = await uploadImage(currentImageFile);
+                    if (uploadedUrl) {
+                        image_url = uploadedUrl;
+                    } else {
+                        showToast('Image upload failed', true);
+                        return;
+                    }
+                }
+                
+                if (!image_url) {
+                    showToast('Please upload a product image', true);
+                    return;
+                }
+                
+                const productData = {
+                    name,
+                    price,
+                    image_url,
+                    stock_status,
+                    description: description || ''
+                };
+                
+                await saveProduct(productData, id || null);
+                showToast(id ? '✅ Product updated successfully' : '✅ Product added successfully');
+                await loadAdminProducts();
+                resetForm();
+            } catch (error) {
+                showToast('Error: ' + error.message, true);
+            }
+        });
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', resetForm);
+        
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', async () => {
+            await loadAdminProducts();
+            showToast('Products refreshed');
+        });
+
+        // Initialize
+        loadAdminProducts();
+        
+        // Create storage bucket if not exists
+        async function initStorage() {
+            const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+            const bucketExists = buckets?.some(b => b.name === 'product-images');
+            
+            if (!bucketExists) {
+                const { error } = await supabaseAdmin.storage.createBucket('product-images', {
+                    public: true
+                });
+                if (error) console.error('Error creating bucket:', error);
+                else console.log('Storage bucket created successfully!');
+            } else {
+                console.log('Storage bucket already exists');
+            }
+        }
+        
+        initStorage();
+    </script>
+</body>
+</html>
